@@ -10,6 +10,7 @@ Unofficial WebSocket and HTTP REST API client for Home Assistant written in Type
 - [ ] Highly extensible for power users
 - [ ] Strict in terms of typing and following official specifications
 - [ ] Supporting all platforms: Node, Deno, Bun, browsers
+- [ ] Avoid external dependencies where possible
 
 ## Design
 

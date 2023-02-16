@@ -13,6 +13,8 @@ Unofficial WebSocket and HTTP REST API client for Home Assistant written in Type
 - [ ] Avoid external dependencies where possible
 - [ ] Fully tested
 - [ ] Automated release pipeline
+- [ ] Uses modern TypeScript features
+- [ ] Handle all error cases with a description and cause
 
 ## Design
 
@@ -23,7 +25,9 @@ Defaults to [`homeassistant.local`](https://homeassistant.local)
 ```typescript
 import { HAApiClient as HomeAssistant } from "ha-api-client"
 
-const ha = new HomeAssistant()
+const ha = new HomeAssistant({
+  accessToken: 'xxxxxxxxxxxxxxxxxxxxxxx'
+})
 ```
 
 ### Fully configurable

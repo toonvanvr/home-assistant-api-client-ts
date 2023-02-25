@@ -1,27 +1,32 @@
-import { HaAuthToken } from '../model/ha.types.ts'
 import { HaRestClient } from './ha-rest-client.ts'
 import { HaWsClient } from './ha-ws-client.ts'
 
 export interface HaApiClientOptions {
-  accessToken: HaAuthToken
-  url: string | URL
+  accessToken?: string
+  url?: string | URL
 }
 
 export class HaApiClient {
-  public ws: HaWsClient
-  public rest: HaRestClient
+  public wsClient: HaWsClient
+  public restClient: HaRestClient
   #url!: URL
 
-  constructor({ accessToken, url }: HaApiClientOptions) {
+  constructor({
+    accessToken = Deno.env.get('HA_ACCESS_TOKEN'),
+    url = 'https://homeassistant.local',
+  }: HaApiClientOptions) {
     this.url = url
-    this.ws = new HaWsClient({ accessToken: accessToken, url: this.wsUrl })
-    this.rest = new HaRestClient()
+    this.wsClient = new HaWsClient({
+      accessToken: accessToken,
+      url: this.wsUrl,
+    })
+    this.restClient = new HaRestClient()
   }
 
+  // TODO: validate
+  // TODO: invalidate current WS
+  // TODO: throw on unsupported
   set url(url: string | URL) {
-    // TODO: validate
-    // TODO: invalidate current WS
-    // TODO: throw on unsupported
     this.#url = new URL(url)
     this.#url.protocol ??= 'https:'
     this.#url.hostname ??= 'homeassistant.local'
@@ -31,6 +36,7 @@ export class HaApiClient {
     return new URL(this.#url)
   }
 
+  // TODO: allow overrides
   private get wsUrl(): URL {
     const url = new URL(this.#url)
     url.protocol = url.protocol.replace('http', 'ws')

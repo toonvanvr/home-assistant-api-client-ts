@@ -23,8 +23,8 @@ export class Entity {
     return this.ha.wsClient.callService(domain, service, {
       data: {
         ...data,
-        entity_id: this.entityId,
       },
+      entityId: this.entityId,
     })
   }
 }

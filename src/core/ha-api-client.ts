@@ -1,6 +1,8 @@
+import { BehaviorSubject, Observable } from 'npm:rxjs'
+import { switchMap } from 'npm:rxjs/operators'
+import { EntityStateDto } from '../model/ws/common/entity-state.dto.ts'
 import { HaRestClient } from './ha-rest-client.ts'
 import { HaWsClient } from './ha-ws-client.ts'
-
 export interface HaApiClientOptions {
   accessToken?: string
   url?: string | URL
@@ -44,5 +46,51 @@ export class HaApiClient {
       .filter((v) => v !== '/')
       .join('/')
     return url
+  }
+
+  readonly states$ = new Observable<
+    Map<string, BehaviorSubject<EntityStateDto | null>>
+  >((subscriber) => {
+    !(async () => {
+      const states = new Map<string, BehaviorSubject<EntityStateDto | null>>()
+      const events = await this.wsClient.subscribeStateChangedEvents()
+      const initialStatesDto = await this.wsClient.getStates()
+      for (const state of initialStatesDto) {
+        states.set(
+          state.entity_id,
+          new BehaviorSubject<EntityStateDto | null>(state)
+        )
+      }
+      subscriber.next(states)
+      for await (const event of events) {
+        const state = event.event.data.new_state
+        // TODO: compare timestamps and only emit if newer
+        // TODO: handle entity renames
+        const subject = states.get(state.entity_id)
+        if (subject) {
+          subject.next(state)
+        } else {
+          states.set(
+            state.entity_id,
+            new BehaviorSubject<EntityStateDto | null>(state)
+          )
+        }
+      }
+    })()
+  })
+
+  state$(entityId: string): Observable<EntityStateDto | null> {
+    return this.states$.pipe(
+      switchMap((states) => {
+        const state = states.get(entityId)
+        if (!state) {
+          const subject = new BehaviorSubject<EntityStateDto | null>(null)
+          states.set(entityId, subject)
+          return subject.asObservable()
+        } else {
+          return state
+        }
+      })
+    )
   }
 }

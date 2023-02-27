@@ -1,4 +1,7 @@
+import { EntityStateDto } from '../model/ws/common/entity-state.dto.ts'
 import { HaWsClientMsg, HaWsClientResp } from '../model/ws/messages.ts'
+import { GetStatesResponseDto } from '../model/ws/response/get-states.dto.ts'
+import { SubscribeStateChangedEventsDto } from '../model/ws/response/subscribe-events.dto.ts'
 import { OpenSubscription } from '../util/async.ts'
 import { UsageError } from '../util/error.ts'
 import { HaWs } from './ha-ws.ts'
@@ -48,7 +51,7 @@ export class HaWsClient {
   }
 
   // TODO: reconnect handling
-  public async command<T extends HaWsClientResp>(
+  private async command<T extends HaWsClientResp>(
     msg: HaWsClientMsg
   ): Promise<T> {
     const ws = await this.ws
@@ -56,10 +59,48 @@ export class HaWsClient {
   }
 
   // TODO: reconnect handling
-  public async subscribe<T extends HaWsClientResp, U extends HaWsClientResp>(
+  private async subscribe<T extends HaWsClientResp, U extends HaWsClientResp>(
     msg: HaWsClientMsg
   ): Promise<[U, OpenSubscription<T>]> {
     const ws = await this.ws
     return ws.subscribe<T, U>(msg)
+  }
+
+  // Official API methods
+  public async getStates(): Promise<EntityStateDto[]> {
+    const { result } = await this.command<GetStatesResponseDto>({
+      type: 'get_states',
+    })
+    return result
+  }
+
+  public async subscribeStateChangedEvents() {
+    const [, events] = await this.subscribe<
+      SubscribeStateChangedEventsDto,
+      any
+    >({
+      type: 'subscribe_events', // TODO: enum or typed
+      event_type: 'state_changed',
+    })
+    return events
+  }
+
+  callService(
+    domain: string,
+    service: string,
+    { data, entityId }: { data?: any; entityId?: string } = {}
+  ) {
+    const msg: any = {
+      type: 'call_service',
+      domain,
+      service,
+    }
+    if (data !== undefined) {
+      msg.service_data = data
+    }
+    if (entityId !== undefined) {
+      msg.target = { entity_id: entityId }
+    }
+    return this.command(msg)
   }
 }

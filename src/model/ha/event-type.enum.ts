@@ -1,0 +1,23 @@
+// TODO: this is not extensible by 3rd party integrators using this lib
+export enum EventType {
+  callService = 'call_service',
+  componentLoaded = 'component_loaded',
+  coreConfigUpdated = 'core_config_updated',
+  dataEntryFlowProgressed = 'data_entry_flow_progressed',
+  homeAssistantStart = 'homeassistant_start',
+  homeAssistantStarted = 'homeassistant_started',
+  homeAssistantStop = 'homeassistant_stop',
+  homeAssistantFinalWrite = 'homeassistant_final_write',
+  homeAssistantClose = 'homeassistant_close',
+  logbookEntry = 'logbook_entry',
+  serviceRegistered = 'service_registered',
+  serviceRemoved = 'service_removed',
+  stateChanged = 'state_changed',
+  themesUpdated = 'themes_updated',
+  userAdded = 'user_added',
+  userRemoved = 'user_removed',
+  automationReloaded = 'automation_reloaded',
+  automationTriggered = 'automation_triggered',
+  sceneReloaded = 'scene_reloaded',
+  scriptStarted = 'script_started',
+}

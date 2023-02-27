@@ -90,14 +90,20 @@ export class HaWs {
     msg: HaWsClientMsg
   ): Promise<T> {
     await this.authenticated
-    const id = +this.msgCount
-    this.ws.send(JSON.stringify({ ...msg, id }))
+    const id = ++this.msgCount
+    const payload = { ...msg, id }
+    console.log('>', payload)
+    this.ws.send(JSON.stringify(payload))
     const promise = new OpenPromise<HaWsClientResp>({ timeout: this.timeout })
     this.responses.set(id, promise)
     promise.promise.then(() => this.responses.delete(id))
-    return promise.promise as Promise<T>
+    const response = await (promise.promise as Promise<T>)
+    console.log('<', response)
+    return response
   }
 
+  // ! FIXME: (critical) if the promised value is fetched with a delay,
+  // !        another message may have come in first, which would be tossed
   public async subscribe<T extends HaWsClientResp, U extends HaWsClientResp>(
     msg: HaWsClientMsg
   ): Promise<[U, OpenSubscription<T>]> {

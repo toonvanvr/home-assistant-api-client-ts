@@ -7,11 +7,11 @@ export interface EntityOptions {
   entityId: string
 }
 
-export class Entity {
+export abstract class Entity<State = EntityStateDto> {
   protected ha: HaApiClient
   protected entityId: string
 
-  public readonly state$: Observable<EntityStateDto | null>
+  public readonly state$: Observable<State | null>
 
   constructor({ ha, entityId }: EntityOptions) {
     this.ha = ha
@@ -21,9 +21,7 @@ export class Entity {
 
   protected callService(domain: string, service: string, data: any) {
     return this.ha.wsClient.callService(domain, service, {
-      data: {
-        ...data,
-      },
+      data,
       entityId: this.entityId,
     })
   }

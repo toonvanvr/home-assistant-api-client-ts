@@ -1,18 +1,28 @@
-import { float, int } from '../../util/types.ts'
-import { ClimateHvacMode } from './climate/hvac-mode.enum.ts'
-import { ClimatePresetMode } from './climate/preset-mode.enum.ts'
-import { ClimateService } from './climate/service.enum.ts'
-import { ClimateSwingMode } from './climate/swing-mode.enum.ts'
-import { Entity, EntityOptions } from './entity.ts'
+import { float, int } from '../../../util/types.ts'
+import { Entity, EntityOptions } from '../entity.class.ts'
+import { ClimateHvacMode } from './hvac-mode.enum.ts'
+import { ClimatePresetMode } from './preset-mode.enum.ts'
+import { ClimateService } from './service.enum.ts'
+import { ClimateStateAttributes } from './state-attributes.interface.ts'
+import { ClimateSwingMode } from './swing-mode.enum.ts'
 
 /**
- * @see https://www.home-assistant.io/integrations/climate
- * @see https://developers.home-assistant.io/docs/core/entity/climate/
+ * A climate entity controls temperature, humidity, or fans,
+ * such as A/C systems and humidifiers
+ *
+ * - [Entity](https://developers.home-assistant.io/docs/core/entity/climate/)
+ * - [Services](https://www.home-assistant.io/integrations/climate)
  */
-export class ClimateEntity extends Entity {
+export class ClimateEntity<
+  State extends Partial<ClimateStateAttributes> = ClimateStateAttributes
+> extends Entity<State> {
   constructor(entityOptions: EntityOptions) {
     super(entityOptions)
   }
+
+  // get temperatureUnit$() {
+  //   return this.state$.pipe(map((state) => state?.current_temperature ?? null))
+  // }
 
   callService(service: ClimateService, payload: unknown) {
     return super.callService('climate', service, payload)
@@ -42,7 +52,7 @@ export class ClimateEntity extends Entity {
     return this.callService(ClimateService.setTemperature, { temperature })
   }
 
-  setEnabled(enabled: boolean) {
+  toggle(enabled: boolean) {
     if (enabled) {
       return this.callService(ClimateService.turnOn, null)
     } else {

@@ -1,7 +1,10 @@
-export interface EntityStateDto {
+export interface EntityStateDto<
+  State = string,
+  Attributes = Record<string, unknown>
+> {
   entity_id: string
-  state: string
-  attributes: Record<string, unknown>
+  state: State
+  attributes: Attributes
   last_changed: string
   last_updated: string
   context: {

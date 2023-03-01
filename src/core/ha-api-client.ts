@@ -79,13 +79,18 @@ export class HaApiClient {
     })()
   })
 
-  state$(entityId: string): Observable<EntityStateDto | null> {
+  state$<State = EntityStateDto>(entityId: string): Observable<State | null> {
     return this.states$.pipe(
       switchMap((states) => {
-        const state = states.get(entityId)
+        const state = states.get(entityId) as
+          | BehaviorSubject<State | null>
+          | undefined
         if (!state) {
-          const subject = new BehaviorSubject<EntityStateDto | null>(null)
-          states.set(entityId, subject)
+          const subject = new BehaviorSubject<State | null>(null)
+          states.set(
+            entityId,
+            subject as BehaviorSubject<EntityStateDto | null>
+          )
           return subject.asObservable()
         } else {
           return state
